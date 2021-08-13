@@ -13,5 +13,17 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  JWT.verify(token, "dkfhawie43h42khseridwefuk2oisdqw5");
+  try {
+    let user = await JWT.verify(token, "dkfhawie43h42khseridwefuk2oisdqw5");
+    req.user = user.email;
+    next();
+  } catch (error) {
+    return res.status(400).json({
+      errors: [
+        {
+          msg: "Token invalid",
+        },
+      ],
+    });
+  }
 };
