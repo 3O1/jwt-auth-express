@@ -2,6 +2,7 @@ const router = require("express").Router();
 const { check, validationResult } = require("express-validator");
 const { users } = require("../db-sim");
 const bcrypt = require("bcrypt");
+const JWT = require("jsonwebtoken");
 
 router.post(
   "/signup",
@@ -30,7 +31,7 @@ router.post(
     });
 
     if (user) {
-      res.status(400).json({
+      return res.status(400).json({
         errors: [
           {
             // value: "",
@@ -42,14 +43,31 @@ router.post(
       });
     }
 
-    let hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     users.push({
       email: email,
       password: hashedPassword,
     });
     console.log(hashedPassword);
 
-    res.send("validation complete");
+    // JWT
+    const token = await JWT.sign(
+      {
+        // PAYLOAD
+        email,
+      },
+      // might want to have in a .env file
+      "dkfhawie43h42khseridwefuk2oisdqw5",
+      {
+        // object
+        expiresIn: 3600000,
+      }
+    );
+
+    // send token to client
+    res.json({
+      token,
+    });
   }
 );
 
