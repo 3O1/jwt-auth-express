@@ -4,6 +4,7 @@ const { users } = require("../db-sim");
 const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
 
+/** SIGNUP */
 router.post(
   "/signup",
   [
@@ -70,6 +71,65 @@ router.post(
     });
   }
 );
+
+/** LOGIN */
+
+// can add express-validator to validate email - prevent unecessary db calls
+router.post("/login", async (req, res) => {
+  const { password, email } = req.body;
+
+  // check if user with that email exists
+  let user = users.find((user) => {
+    return user.email === email;
+  });
+
+  // if user is undefined -> trigger error
+  if (!user) {
+    return res.status(400).json({
+      errors: [
+        {
+          // don't want to be specific
+          // msg: "There is no account associated with that email.",
+          msg: "The email or password you entered is invalid.",
+        },
+      ],
+    });
+  }
+
+  // compare hashed password in the db
+  let isValid = await bcrypt.compare(password, user.password);
+
+  if (!isValid) {
+    return res.status(400).json({
+      errors: [
+        {
+          // don't want to be specific
+          // msg: "There is no account associated with that email.",
+          msg: "The email or password you entered is invalid.",
+        },
+      ],
+    });
+  }
+
+  // JWT
+  const token = await JWT.sign(
+    {
+      // PAYLOAD
+      email,
+    },
+    // might want to have in a .env file
+    "dkfhawie43h42khseridwefuk2oisdqw5",
+    {
+      // object
+      expiresIn: 3600000,
+    }
+  );
+
+  // send token to client
+  res.json({
+    token,
+  });
+});
 
 router.get("/all", (req, res) => {
   res.json(users);
