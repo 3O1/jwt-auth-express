@@ -103,29 +103,22 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({
       errors: [
         {
-          // don't want to be specific
-          // msg: "There is no account associated with that email.",
           msg: "The email or password you entered is invalid.",
         },
       ],
     });
   }
 
-  // JWT
   const token = await JWT.sign(
     {
-      // PAYLOAD
       email,
     },
-    // might want to have in a .env file
     "dkfhawie43h42khseridwefuk2oisdqw5",
     {
-      // object
       expiresIn: 3600000,
     }
   );
 
-  // send token to client
   res.json({
     token,
   });
